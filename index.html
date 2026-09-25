@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Display Portal - Academic Management System</title>
+  <meta name="description"
+    content="Interactive Student Display Web Portal based on Java Display.java with live stats, grade reporting, and student management.">
+  <link rel="stylesheet" href="styles.css">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js for visualization -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <div class="brand-icon">
+          <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+        <div>
+          <h1 class="brand-title">Student Display Portal</h1>
+          <div class="brand-subtitle">
+            <span>Academic Performance Dashboard</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn btn-secondary" id="openJavaModalBtn">
+          <i class="fa-solid fa-code"></i> View Display.java Source
+        </button>
+        <button class="btn btn-primary" id="exportDataBtn">
+          <i class="fa-solid fa-download"></i> Export Records
+        </button>
+      </div>
+    </header>
+
+    <!-- Top Stats Bar -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="fa-solid fa-users"></i>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value" id="statTotalStudents">0</div>
+          <div class="stat-label">Total Students</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="fa-solid fa-chart-line"></i>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value" id="statAverageMarks">0.0%</div>
+          <div class="stat-label">Class Average</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value" id="statPassRate">0%</div>
+          <div class="stat-label">Pass Rate</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="fa-solid fa-trophy"></i>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value" id="statTopScore">0</div>
+          <div class="stat-label">Highest Score</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="main-layout">
+      <!-- Left Column: Student Entry Form -->
+      <aside>
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title" id="formTitle">
+              <i class="fa-solid fa-user-plus"></i> Add New Student
+            </h2>
+            <span class="badge-tag" id="formModeTag">New Entry</span>
+          </div>
+
+          <form id="studentForm">
+            <input type="hidden" id="studentIdInput">
+
+            <div class="form-group">
+              <label class="form-label" for="regInput">
+                <i class="fa-solid fa-id-card"></i> Registration Number (reg)
+              </label>
+              <input type="number" id="regInput" class="form-control" placeholder="e.g. 101" required min="1">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="nameInput">
+                <i class="fa-solid fa-user"></i> Student Name (name)
+              </label>
+              <input type="text" id="nameInput" class="form-control" placeholder="e.g. Alex Johnson" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="courseInput">
+                <i class="fa-solid fa-book-open"></i> Course / Department
+              </label>
+              <input type="text" id="courseInput" class="form-control" placeholder="e.g. Computer Science"
+                value="Computer Science">
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="mark1Input">Subject 1 Mark</label>
+                <input type="number" id="mark1Input" class="form-control" placeholder="0-100" min="0" max="100"
+                  required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="mark2Input">Subject 2 Mark</label>
+                <input type="number" id="mark2Input" class="form-control" placeholder="0-100" min="0" max="100"
+                  required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="mark3Input">Subject 3 Mark (marks)</label>
+              <input type="number" id="mark3Input" class="form-control" placeholder="0-100" min="0" max="100" required>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; margin-top: 1.5rem;">
+              <button type="submit" class="btn btn-primary" style="flex: 1;" id="saveStudentBtn">
+                <i class="fa-solid fa-floppy-disk"></i> Save Student Record
+              </button>
+              <button type="button" class="btn btn-secondary" id="resetFormBtn" style="display: none;">
+                Cancel
+              </button>
+            </div>
+          </form>
+
+          <!-- Embedded Mini Java Terminal Simulator -->
+          <div class="java-preview-box" id="terminalPreview">
+            <div class="java-preview-header">
+              <span><i class="fa-solid fa-terminal"></i> Display.java Standard Output</span>
+              <span>s.Display()</span>
+            </div>
+            <div class="java-preview-output" id="javaConsoleOutput">Enter details above to see Java System.out.println()
+              simulation...</div>
+          </div>
+        </div>
+
+        <!-- Performance Distribution Chart -->
+        <div class="card chart-card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fa-solid fa-chart-pie"></i> Marks Breakdown
+            </h3>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="statsChart"></canvas>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Right Column: Student Records List & Controls -->
+      <main>
+        <!-- Search & Filter Controls Bar -->
+        <div class="controls-bar">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass search-icon"></i>
+            <input type="text" id="searchInput" class="search-input"
+              placeholder="Search by name or registration number...">
+          </div>
+
+          <div class="filter-group">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="pass">Passed</button>
+            <button class="filter-btn" data-filter="fail">Failed</button>
+          </div>
+
+          <div>
+            <select id="sortSelect" class="select-control">
+              <option value="reg-asc">Sort by Reg. No (Asc)</option>
+              <option value="reg-desc">Sort by Reg. No (Desc)</option>
+              <option value="marks-desc">Sort by Score (High to Low)</option>
+              <option value="name-asc">Sort by Name (A-Z)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Student Display Grid -->
+        <div class="students-grid" id="studentsContainer">
+          <!-- Dynamically populated student cards -->
+        </div>
+      </main>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <p>Student Display Web System &copy; 2026 &bull; Designed based on <strong>Display.java</strong> and
+        <strong>Student.java</strong> workspace objects.</p>
+    </footer>
+  </div>
+
+  <!-- Java Source Code Viewer Modal -->
+  <div class="modal-overlay" id="javaModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fa-brands fa-java" style="color: #ea580c;"></i> Display.java Source Code
+        </h3>
+        <button class="modal-close" id="closeJavaModalBtn">&times;</button>
+      </div>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+        Here is the original Java program that drives the student data representation:
+      </p>
+      <div class="code-block">
+        <span class="kw">import</span> java.util.Scanner;
+
+        <span class="kw">class</span> <span class="type">Student</span> {
+        <span class="type">String</span> name;
+        <span class="type">int</span> reg;
+        <span class="type">double</span> marks;
+
+        <span class="kw">void</span> <span class="func">Display</span>() {
+        <span class="type">System</span>.out.println(name);
+        <span class="type">System</span>.out.println(reg);
+        <span class="type">System</span>.out.println(marks);
+        }
+        }
+
+        <span class="kw">class</span> <span class="type">Display</span> {
+        <span class="kw">public static void</span> <span class="func">main</span>(<span class="type">String</span>
+        args[]) {
+        <span class="type">Scanner</span> sc = <span class="kw">new</span> <span class="type">Scanner</span>(<span
+          class="type">System</span>.in);
+        <span class="type">Student</span> s = <span class="kw">new</span> <span class="type">Student</span>();
+
+        <span class="type">System</span>.out.println(<span class="str">"Enter name:"</span>);
+        s.name = sc.nextLine();
+
+        <span class="type">System</span>.out.println(<span class="str">"Enter reg.no:"</span>);
+        s.reg = sc.nextInt();
+
+        <span class="type">System</span>.out.println(<span class="str">"Enter mark:"</span>);
+        s.marks = sc.nextDouble();
+
+        s.<span class="func">Display</span>();
+        }
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Detailed Report Card Modal -->
+  <div class="modal-overlay" id="reportModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i class="fa-solid fa-file-invoice"></i> Student Report Card
+        </h3>
+        <button class="modal-close" id="closeReportModalBtn">&times;</button>
+      </div>
+      <div id="reportModalBody">
+        <!-- Dynamically generated student academic report -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
